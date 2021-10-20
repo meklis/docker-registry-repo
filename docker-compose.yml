@@ -1,0 +1,28 @@
+version: '3.5'
+
+services:
+  registry:
+    container_name: registry
+    image: registry:2.7
+    volumes:
+    - "${PWD}/conf/registry-srv.yml:/etc/docker/registry/config.yml:ro"
+    - "${PWD}/registry:/var/lib/registry"
+    - "${PWD}/htpasswd:/etc/docker/registry/htpasswd"
+
+  registry-ui:
+    container_name: registry-ui
+    image: joxit/docker-registry-ui:latest
+    environment:
+      - DELETE_IMAGES=true
+      - REGISTRY_URL=https://
+      - SINGLE_REGISTRY=true
+      - REGISTRY_TITLE=private docker registry
+    volumes:
+      - ./conf/nginx/nginx.conf:/etc/nginx/conf.d/default.conf
+      - ./conf/nginx/fullchain.pem:/etc/nginx/certs/fullchain.pem
+      - ./conf/nginx/privkey.pem:/etc/nginx/certs/privkey.pem
+    ports:
+      - 80:80
+      - 443:443
+    depends_on:
+      - registry
